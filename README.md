@@ -18,4 +18,5 @@ In this project we:
    5. Reward clipping
    6. Add uncertainty to the Lunar Lander environment, since real-world observations are sometimes noisy
    7. Implement Deep Deterministic Policy Gradient 
+  
 2. Write a report about the different topics we learned in the course
