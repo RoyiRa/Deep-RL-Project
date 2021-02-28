@@ -4,7 +4,7 @@ In this project we:
 
 1. Solve the LunarLanderContinuous-V2 environment
    1. Implement DDQN
-   2. Quantization
+   2. Perform quantization
    3. Experiment with Prioritized Experience Replay
    4. Fine-tune DDQN (LR, number of layers, number of nodes in layers, batch normalization, decay rate, error functions)
       1. Learning rate
