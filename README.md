@@ -6,7 +6,7 @@ In this project we:
    1. Implement DDQN
    2. Perform quantization
    3. Experiment with Prioritized Experience Replay
-   4. Fine-tune DDQN (LR, number of layers, number of nodes in layers, batch normalization, decay rate, error functions)
+   4. Fine-tune DDQN
       1. Learning rate
       2. Number of layers
       3. Number of nodes in layers
