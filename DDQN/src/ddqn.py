@@ -6,7 +6,7 @@ from tensorflow.keras.layers import Dense
 import matplotlib.pyplot as plt
 import random
 from collections import deque
-from utils import *
+from DDQN.utils.general_utils import *
 
 tf.disable_v2_behavior() # testing on tensorflow 1
 
