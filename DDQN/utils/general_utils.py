@@ -1,7 +1,10 @@
 import itertools
-from tensorflow.keras.optimizers import Adam
-import torch
+from configparser import ConfigParser
+
 import numpy as np
+import torch
+from tensorflow.keras.optimizers import Adam
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Prioritized Experience Replay vars
@@ -22,3 +25,11 @@ bucket_2_action = {bucket: idx for idx, bucket in enumerate(all_discrete_actions
 
 def get_noise():
     return np.random.normal(0, 0.05, 2)
+
+
+def load_user_config(path, section):
+    config_object = ConfigParser()
+    config_object.read(path)
+    config_section = config_object[section]
+
+    return config_section
