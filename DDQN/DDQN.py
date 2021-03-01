@@ -6,6 +6,7 @@ from tensorflow.keras.layers import Dense
 import matplotlib.pyplot as plt
 import random
 from collections import deque
+from utils import *
 
 tf.disable_v2_behavior() # testing on tensorflow 1
 
@@ -118,20 +119,29 @@ aver = deque(maxlen=100)
 
 for episode in range(999999):
     state = env.reset()
+
+    noise = get_noise()
+    state[0] += noise[0]
+    state[1] += noise[1]
+
     total_reward = 0
     done = False
-
     while not done:
+
         action = agent.choose_action(state)
         action, _ = quantize(action)
-
         next_state, reward, done, info = env.step(action) # returns sample
-        # if reward < -1:
-        #     reward = -1
-        # elif reward > 1:
-        #     reward = 1
-
+        noise = get_noise()
+        next_state[0] += noise[0]
+        next_state[1] += noise[1]
+        if reward < -1:
+            reward = -1
+        elif reward > 1:
+            reward = 1
         agent.memorize_exp(state, action, reward, next_state, done)
+
+
+
 
         env.render()
         total_reward += reward

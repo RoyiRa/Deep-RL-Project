@@ -2,11 +2,13 @@ import numpy as np
 import gym
 import tensorflow.compat.v1 as tf
 from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Dense, Lambda
+from tensorflow.keras.layers import Dense, Lambda, Add, Input
+from keras import backend as K, Model
+from keras import models
 import matplotlib.pyplot as plt
 import random
 from collections import deque
-from PrioritizedExperienceReplay import *
+from utils import *
 
 tf.disable_v2_behavior() # testing on tensorflow 1
 
@@ -31,35 +33,52 @@ class Agent:
 
         self.gamma = 0.99
         self.epsilon = 1.0  # initialize with high exploration, which will decay later
+
+        # Build networks
+        X_input = Input(self.state_size)
+        X = X_input
+        X = Dense(256, input_shape=(1, self.state_size), activation='relu', kernel_initializer='he_uniform')(X)
+        X = Dense(128, activation='relu', kernel_initializer='he_uniform')(X)
+
         # Build Policy Network
-        self.brain_policy = Sequential()
-        self.brain_policy.add(Dense(256, input_dim=self.state_size, activation="relu"))
-
-        self.policy_value_stream = Sequential()
-        self.policy_value_stream.add(Dense(128, activation="relu"))
-        self.policy_value_stream.add(Dense(1, activation="linear"))
-
-        self.policy_advantage_stream = Sequential()
-        self.policy_advantage_stream.add(Dense(128, activation="relu"))
-        self.policy_advantage_stream.add(Dense(self.action_size, activation="linear"))
-        self.policy_advantage_stream.compile(loss="mse", optimizer=self.optimizer)
-
         state_value = Dense(1, kernel_initializer='he_uniform')(X)
         state_value = Lambda(lambda s: K.expand_dims(s[:, 0], -1), output_shape=(self.action_size,))(state_value)
 
-        self.action_advantage = Dense(self.action_size,  activation="linear")(X)
-        self.action_advantage = Lambda(lambda a: a[:, :] - K.mean(a[:, :], keepdims=True), output_shape=(self.action_size,))(self.action_advantage)
+        action_advantage = Dense(self.action_size, kernel_initializer='he_uniform')(X)
+        action_advantage = Lambda(lambda a: a[:, :] - K.mean(a[:, :], keepdims=True), output_shape=(self.action_size,))(
+            action_advantage)
 
-        X = Add()([state_value, self.action_advantage])
+        brain_policy = Add()([state_value, action_advantage])
+        self.brain_policy = Model(inputs=X_input, outputs=brain_policy)
+        self.brain_policy.compile(loss="mse", optimizer=self.optimizer)
 
         # Build Target Network
-        self.brain_target = Sequential()
-        self.brain_target.add(Dense(256, input_dim=self.state_size, activation="relu"))
-        self.brain_target.add(Dense(128, activation="relu"))
-        self.brain_target.add(Dense(self.action_size, activation="linear"))
+        state_value = Dense(1, kernel_initializer='he_uniform')(X)
+        state_value = Lambda(lambda s: K.expand_dims(s[:, 0], -1), output_shape=(self.action_size,))(state_value)
+
+        action_advantage = Dense(self.action_size, kernel_initializer='he_uniform')(X)
+        action_advantage = Lambda(lambda a: a[:, :] - K.mean(a[:, :], keepdims=True), output_shape=(self.action_size,))(
+            action_advantage)
+
+        brain_target = Add()([state_value, action_advantage])
+        self.brain_target = Model(inputs=X_input, outputs=brain_target)
         self.brain_target.compile(loss="mse", optimizer=self.optimizer)
 
         self.update_brain_target()
+
+    # def predict_policy(self, state):
+    #     values = self.policy_state_value.predict(state)
+    #     advantages = self.policy_action_advantage.predict(state)
+    #     qvals = values + (advantages - advantages.mean())
+
+        # return qvals
+
+    # def predict_target(self, state):
+    #     values = self.target_state_value.predict(state)
+    #     advantages = self.target_action_advantage.predict(state)
+    #     qvals = values + (advantages - advantages.mean())
+    #
+    #     return qvals
 
     # add new experience to the replay exp
     def memorize_exp(self, state, action, reward, next_state, done):
@@ -79,7 +98,8 @@ class Agent:
     """
 
     def update_brain_target(self):
-        return self.brain_target.set_weights(self.brain_policy.get_weights())
+        self.brain_target.set_weights(self.brain_policy.get_weights())
+
 
     def choose_action(self, state):
         if np.random.uniform(0.0, 1.0) < self.epsilon: #TODO: DIDN'T TRY THIS YET, MAY BE MANDATORY or self.replay_exp.size < BATCH_SIZE:
@@ -112,8 +132,8 @@ class Agent:
             sample_dones[temp] = exp[4]
             temp += 1
 
+        # sample_qhat_next = self.predict_target(sample_next_states)
         sample_qhat_next = self.brain_target.predict(sample_next_states)
-
 
         # set all Q values terminal states to 0
         sample_qhat_next = sample_qhat_next * (np.ones(shape=sample_dones.shape) - sample_dones)
@@ -121,8 +141,8 @@ class Agent:
 
         # choose max action for each state
         sample_qhat_next = np.max(sample_qhat_next, axis=1)
-
         sample_qhat = self.brain_policy.predict(sample_states)
+        # sample_qhat = self.predict_policy(sample_states)
 
         errors = []
         for i in range(cur_batch_size):
@@ -134,6 +154,8 @@ class Agent:
 
         q_target = sample_qhat
         self.brain_policy.fit(sample_states, q_target, epochs=1, verbose=0)
+
+
 
 
 env = gym.make("LunarLanderContinuous-v2")
@@ -166,7 +188,6 @@ for episode in range(999999):
         env.render()
         total_reward += reward
         agent.learn()
-
 
         state = next_state
         timestep += 1
