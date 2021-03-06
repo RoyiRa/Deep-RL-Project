@@ -2,7 +2,6 @@ import itertools
 from configparser import ConfigParser
 import matplotlib.pyplot as plt
 import numpy as np
-import torch
 from tensorflow.keras.optimizers import Adam
 
 
@@ -51,12 +50,8 @@ def read_configurations(settings):
     return episodes, epsilon_decay, gamma, min_epsilon, min_number_of_episodes, reward_goal
 
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
 # General Vars
 LANDER_CONTINUOUS = 'LunarLanderContinuous-v2'
-SETTINGS_SECTION = 'SETTINGS'
-CONFIG_FILE_PATH = '../conf/config.ini'
 
 MAX_TIMESTEPS_PER_EPISODE = 2000
 UPDATE_EVERY_C_STEPS = 100
@@ -65,8 +60,8 @@ REWARD_GOAL = 200
 MIN_NUMBER_OF_EPISODES = 100
 
 # Replay vars
-REPLAY_REGULAR = 'regular'
 REPLAY_PRIORITIZED = 'prioritized'
+REPLAY_REGULAR = 'regular'
 REPLAY_TYPE = REPLAY_REGULAR
 
 # NN vars
@@ -76,6 +71,8 @@ BUFFER_SIZE = int(1e6)
 GAMMA = 0.99
 EPSILON_DECAY = 0.995
 MIN_EPSILON = 0.1
+IS_SOFT_UPDATE = False
+TAU = 0.01 # target network soft update hyperparameter
 
 # Quantization vars
 m_engine = [-1., 0.2, 0.6]
