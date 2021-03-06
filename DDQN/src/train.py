@@ -1,16 +1,14 @@
-from collections import deque
-
 import gym
 import tensorflow.compat.v1 as tf
-
-from DDQN.utils.general_utils import *
-from DDQN.src.d3qn import D3QNAgent
-from DDQN.src.ddqn import DDQNAgent
+from collections import deque
+from utils.general_utils import *
+from D3QN import D3QNAgent
+from DDQN import DDQNAgent
 
 tf.disable_v2_behavior() # testing on tensorflow 1
 
 
-def get_agent(env, optimizer, type='DDQN'):
+def getAgent(env, optimizer, type='DDQN'):
     if type == 'D3QN':
         agent = D3QNAgent(env, optimizer)
     else:
@@ -21,7 +19,7 @@ def get_agent(env, optimizer, type='DDQN'):
 
 def main():
     env = gym.make(LANDER_CONTINUOUS)
-    agent = get_agent(env, optimizer, type='DDQN')
+    agent = getAgent(env, optimizer, type='D3QN')
 
     total_timesteps = 0
     rewards = []
