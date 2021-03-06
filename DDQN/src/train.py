@@ -1,9 +1,11 @@
+from collections import deque
+
 import gym
 import tensorflow.compat.v1 as tf
-from collections import deque
-from utils.general_utils import *
-from D3QN import D3QNAgent
-from DDQN import DDQNAgent
+
+from DDQN.utils.general_utils import *
+from DDQN.src.d3qn import D3QNAgent
+from DDQN.src.ddqn import DDQNAgent
 
 tf.disable_v2_behavior() # testing on tensorflow 1
 

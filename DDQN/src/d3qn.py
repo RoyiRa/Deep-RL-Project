@@ -1,10 +1,10 @@
 import random
-from collections import deque
 
-from tensorflow.keras.layers import Dense, Lambda, Add, Input
 from keras import backend as K, Model
-from ExperienceReplay import ExperienceReplay
-from utils.general_utils import *
+from tensorflow.keras.layers import Dense, Lambda, Add, Input
+
+from DDQN.src.experience_replay import ExperienceReplay
+from DDQN.utils.general_utils import *
 
 
 class D3QNAgent:
