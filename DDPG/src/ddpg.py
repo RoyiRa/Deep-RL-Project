@@ -7,14 +7,11 @@ from DDPG.src.noise import OUNoise
 from DDPG.src.actor import ActorNetwork
 from DDPG.src.critic import CriticNetwork
 from DDPG.src.replay_buffer import ReplayBuffer
-from DDPG.utils.general_utils import load_user_config
+from DDPG.utils.general_utils import *
 
 EXPECTED_REWARD = 200
 
-MAX_STEPS = 3000
-
-SETTINGS_SECTION = 'SETTINGS'
-CONFIG_FILE_PATH = '../conf/config.ini'
+MAX_STEPS = 2000
 
 LANDER_CONTINUOUS = 'LunarLanderContinuous-v2'
 
@@ -32,10 +29,11 @@ def train(sess, environment, actor, critic, actor_noise, buffer_size, min_batch,
     max_episodes = episodes
     max_steps = MAX_STEPS
     score_list = []
-
+    average_rewards = []
     for i in range(max_episodes):
 
         state = environment.reset()
+        # state = add_noise(state)
         score = 0
 
         for j in range(max_steps):
@@ -43,6 +41,8 @@ def train(sess, environment, actor, critic, actor_noise, buffer_size, min_batch,
 
             action = actor.predict(np.reshape(state, (1, actor.s_dim))) + actor_noise()
             next_state, reward, done, info = environment.step(action[0])
+            # next_state = add_noise(next_state)
+
             replay_buffer.add(np.reshape(state, (actor.s_dim,)), np.reshape(action, (actor.a_dim,)),
                               reward, done, np.reshape(next_state, (actor.s_dim,)))
 
@@ -55,7 +55,7 @@ def train(sess, environment, actor, critic, actor_noise, buffer_size, min_batch,
 
             y = []
             for k in range(min_batch):
-                y.append(rewards[k] + critic.gamma * target_q[k] * (1-dones[k]))
+                y.append(rewards[k] + critic.gamma * target_q[k] * (1 - dones[k]))
 
             # Update the critic given the targets
             predicted_q_value, _ = critic.train(states, actions, np.reshape(y, (min_batch, 1)))
@@ -79,13 +79,14 @@ def train(sess, environment, actor, critic, actor_noise, buffer_size, min_batch,
         score_list.append(score)
 
         avg = np.mean(score_list[-100:])
+        average_rewards.append(np.mean(score_list))
         print("Average of last 100 episodes: {avg} \n".format(avg="{0:.2f}".format(avg)))
 
         if avg > EXPECTED_REWARD:
             print(f'Task Completed with average reward: {avg}')
             break
 
-    return score_list
+    return score_list, average_rewards
 
 
 def init_environment():
@@ -128,9 +129,9 @@ def main():
         actor_noise = OUNoise(mu=np.zeros(action_dim))
         actor = ActorNetwork(sess, state_dim, action_dim, action_bound, actor_lr, tau, min_batch)
         critic = CriticNetwork(sess, state_dim, action_dim, critic_lr, tau, gamma, actor.get_num_trainable_vars())
-        scores = train(sess, environment, actor, critic, actor_noise, buffer_size, min_batch, episodes)
+        avers, scores = train(sess, environment, actor, critic, actor_noise, buffer_size, min_batch, episodes)
 
-        plot_scores_graph(scores)
+        draw_plots(avers, scores)
 
 
 if __name__ == '__main__':
