@@ -97,7 +97,7 @@ import random
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Dense
 from DDQN.utils.general_utils import *
-from .experience_replay import ExperienceReplay
+from DDQN.src.experience_replay import ExperienceReplay
 
 
 class DDQNAgent:

@@ -27,7 +27,6 @@ def load_user_config(path, section):
 
     return config_section
 
-
 def draw_plots(aver_reward, rewards):
     plt.title("Learning Curve")
     plt.xlabel("Episode")
@@ -57,7 +56,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # General Vars
 LANDER_CONTINUOUS = 'LunarLanderContinuous-v2'
 SETTINGS_SECTION = 'SETTINGS'
-CONFIG_FILE_PATH = 'conf/config.ini'
+CONFIG_FILE_PATH = '../conf/config.ini'
 
 MAX_TIMESTEPS_PER_EPISODE = 2000
 UPDATE_EVERY_C_STEPS = 100

@@ -21,7 +21,7 @@ def get_agent(env, optimizer, type='DDQN'):
 
 def main():
     env = gym.make(LANDER_CONTINUOUS)
-    agent = get_agent(env, optimizer, type='D3QN')
+    agent = get_agent(env, optimizer, type='DDQN')
 
     total_timesteps = 0
     rewards = []
