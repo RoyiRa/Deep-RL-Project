@@ -1,6 +1,6 @@
 from collections import deque
 from DDQN.utils.general_utils import *
-from DDQN.utils.general_utils import Memory
+from DDQN.utils.prioritized_experience_replay import Memory
 
 
 class ExperienceReplay:

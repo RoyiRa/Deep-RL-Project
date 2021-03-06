@@ -10,7 +10,7 @@ from DDQN.src.ddqn import DDQNAgent
 tf.disable_v2_behavior() # testing on tensorflow 1
 
 
-def getAgent(env, optimizer, type='DDQN'):
+def get_agent(env, optimizer, type='DDQN'):
     if type == 'D3QN':
         agent = D3QNAgent(env, optimizer)
     else:
@@ -21,7 +21,7 @@ def getAgent(env, optimizer, type='DDQN'):
 
 def main():
     env = gym.make(LANDER_CONTINUOUS)
-    agent = getAgent(env, optimizer, type='D3QN')
+    agent = get_agent(env, optimizer, type='D3QN')
 
     total_timesteps = 0
     rewards = []
