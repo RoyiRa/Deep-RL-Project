@@ -1,4 +1,4 @@
-from DDQN.src.sum_tree import SumTree
+from utils.sum_tree import SumTree
 import random
 
 
