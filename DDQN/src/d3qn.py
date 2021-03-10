@@ -7,7 +7,7 @@ from DDQN.utils.general_utils import *
 
 
 class D3QNAgent:
-    def __init__(self, env, optimizer, gamma):
+    def __init__(self, env, optimizer, gamma, is_soft_update, tau, batch_size):
         self.state_size = env.observation_space.shape[0] # number of factors in the state; e.g: velocity, position, etc
         _, self.action_size = quantize(None)
         self.optimizer = optimizer
@@ -16,6 +16,9 @@ class D3QNAgent:
         self.replay_exp = ExperienceReplay(type=REPLAY_TYPE)
 
         self.gamma = gamma
+        self.batch_size = batch_size
+        self.is_soft_update = is_soft_update
+        self.tau = tau
         self.epsilon = 1.0  # initialize with high exploration, which will decay later
 
         # Build networks
@@ -53,12 +56,12 @@ class D3QNAgent:
         self.update_brain_target()
 
     def update_brain_target(self):
-        if IS_SOFT_UPDATE:
+        if self.is_soft_update:
             policy_weights = self.brain_policy.get_weights()
             target_weights = self.brain_target.get_weights()
             counter = 0
             for q_weight, target_weight in zip(policy_weights, target_weights):
-                target_weight = target_weight * (1 - TAU) + q_weight * TAU
+                target_weight = target_weight * (1 - self.tau) + q_weight * self.tau
                 target_weights[counter] = target_weight
                 counter += 1
             self.brain_target.set_weights(target_weights)
@@ -78,10 +81,10 @@ class D3QNAgent:
     def learn(self, sample=None):
         if sample is None:
             if self.replay_exp.is_prioritized():
-                cur_batch_size = min(self.replay_exp.size, BATCH_SIZE)
+                cur_batch_size = min(self.replay_exp.size, self.batch_size)
                 mini_batch = self.replay_exp.replay_exp.sample(cur_batch_size)
             else:
-                cur_batch_size = min(self.replay_exp.size, BATCH_SIZE)
+                cur_batch_size = min(self.replay_exp.size, self.batch_size)
                 mini_batch = random.sample(self.replay_exp.replay_exp, cur_batch_size)
         else:
             cur_batch_size = 1
